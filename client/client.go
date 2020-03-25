@@ -7,29 +7,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/kataras/tablewriter"
-	"github.com/landoop/tableprinter"
-
-	gorona "github.com/harik8/gorona/gorona"
+	"github.com/harik8/gorona/gorona"
+	"github.com/jedib0t/go-pretty/table"
 )
 
 const url = "https://corona.lmao.ninja/countries/"
 
-func getPrinter() *tableprinter.Printer {
-	printer := tableprinter.New(os.Stdout)
-	printer.BorderTop = true
-	printer.BorderBottom = true
-	printer.BorderLeft = true
-	printer.BorderRight = true
-	printer.CenterSeparator = "│"
-	printer.ColumnSeparator = "│"
-	printer.RowSeparator = "─"
-	printer.HeaderFgColor = tablewriter.FgGreenColor
-	return printer
-}
-
 // GetCountry : Get by country
 func GetCountry(country string) {
+
+	caseState := gorona.CaseState{}
 
 	req, err := http.Get(url + country)
 	if err != nil {
@@ -37,25 +24,24 @@ func GetCountry(country string) {
 	}
 	defer req.Body.Close()
 
-	cases, err := ioutil.ReadAll(req.Body)
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	cs := gorona.CaseState{}
-	err = json.Unmarshal(cases, &cs)
+	err = json.Unmarshal(body, &caseState)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	getPrinter().Print(cs)
+	printCaseState(caseState)
 
 }
 
 // GetCountries : GetCountries()
 func GetCountries() {
 
-	gs := []gorona.CaseState{}
+	caseStates := gorona.CaseStates{}
 
 	req, err := http.Get(url)
 	if err != nil {
@@ -63,16 +49,66 @@ func GetCountries() {
 	}
 	defer req.Body.Close()
 
-	cases, err := ioutil.ReadAll(req.Body)
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = json.Unmarshal(cases, &gs)
+	err = json.Unmarshal(body, &caseStates)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	getPrinter().Print(gs)
+	printCaseStates(caseStates)
+
+}
+
+func printCaseState(caseState gorona.CaseState) {
+	printCaseStates(gorona.CaseStates{caseState})
+}
+
+func printCaseStates(caseStates gorona.CaseStates) {
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.SetStyle(table.StyleLight)
+
+	t.AppendHeader(
+		table.Row{
+			"Country", "Cases", "Today Cases", "Death", "Today Deaths", "Recovered", "Active", "Critical", "Cases Per Million",
+		},
+	)
+
+	for _, caseState := range caseStates {
+		t.AppendRow(table.Row{
+			caseState.Country,
+			caseState.Cases,
+			caseState.TodayCases,
+			caseState.Deaths,
+			caseState.TodayDeaths,
+			caseState.Recovered,
+			caseState.Active,
+			caseState.Critical,
+			caseState.CasesPerOneMillion,
+		})
+	}
+
+	if len(caseStates) > 1 {
+		t.AppendFooter(
+			table.Row{
+				"Totals",
+				caseStates.Cases(),
+				caseStates.TodayCases(),
+				caseStates.Deaths(),
+				caseStates.TodayDeaths(),
+				caseStates.Recovered(),
+				caseStates.Active(),
+				caseStates.Critical(),
+				caseStates.CasesPerOneMillion(),
+			},
+		)
+	}
+
+	t.Render()
 
 }
