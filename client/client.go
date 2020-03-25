@@ -7,112 +7,108 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/kataras/tablewriter"
-	"github.com/landoop/tableprinter"
-
-	gorona "github.com/harik8/gorona/gorona"
+	"github.com/harik8/gorona/gorona"
+	"github.com/jedib0t/go-pretty/table"
 )
 
-const (
-	url = "https://corona.lmao.ninja/countries/"
-)
-
-func getCoronaStatus(cases map[string]interface{}) gorona.CaseState {
-	cs := gorona.CaseState{}
-
-	_, cou := cases["country"].(string)
-	_, cas := cases["cases"].(float64)
-	_, tca := cases["todayCases"].(float64)
-	_, dea := cases["deaths"].(float64)
-	_, tde := cases["todayDeaths"].(float64)
-	_, rec := cases["recovered"].(float64)
-	_, act := cases["active"].(float64)
-	_, cri := cases["critical"].(float64)
-	_, cpm := cases["casesPerOneMillion"].(float64)
-
-
-	if cou {
-		cs.Country = cases["country"].(string)
-	}
-	if cas {
-		cs.Cases = cases["cases"].(float64)
-	}
-	if tca {
-		cs.TodayCases = cases["todayCases"].(float64)
-	}
-	if dea {
-		cs.Deaths = cases["deaths"].(float64)	
-	}
-	if tde {
-		cs.TodayDeaths = cases["todayDeaths"].(float64)
-	}
-	if rec {
-		cs.Recovered = cases["recovered"].(float64)
-	}
-	if act {
-		cs.Active = cases["active"].(float64)
-	}
-	if cri {
-		cs.Critical = cases["critical"].(float64)
-	}
-	if cpm {
-		cs.CasesPerOneMillion = cases["casesPerOneMillion"].(float64)
-	}
-	return cs
-}
-
-func getPrinter() *tableprinter.Printer {
-	printer := tableprinter.New(os.Stdout)
-
-	printer.BorderTop, printer.BorderBottom, printer.BorderLeft, printer.BorderRight = true, true, true, true
-	printer.CenterSeparator = "│"
-	printer.ColumnSeparator = "│"
-	printer.RowSeparator = "─"
-	printer.HeaderFgColor = tablewriter.FgGreenColor
-	return printer
-}
+const url = "https://corona.lmao.ninja/countries/"
 
 // GetCountry : Get by country
 func GetCountry(country string) {
+
+	caseState := gorona.CaseState{}
+
 	req, err := http.Get(url + country)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer req.Body.Close()
-	cases, err := ioutil.ReadAll(req.Body)
+
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	coronaCases := make(map[string]interface{})
-	err = json.Unmarshal(cases, &coronaCases)
+
+	err = json.Unmarshal(body, &caseState)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	cs := getCoronaStatus(coronaCases)
-	getPrinter().Print(cs)
+
+	printCaseState(caseState)
+
 }
 
 // GetCountries : GetCountries()
 func GetCountries() {
-	gs := []gorona.CaseState{}
+
+	caseStates := gorona.CaseStates{}
+
 	req, err := http.Get(url)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer req.Body.Close()
-	cases, err := ioutil.ReadAll(req.Body)
+
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var coronaCases interface{}
-	err = json.Unmarshal(cases, &coronaCases)
+
+	err = json.Unmarshal(body, &caseStates)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	cs := coronaCases.([]interface{})
-	for c:=0; c<len(cs); c++ {
-		cm := cs[c].(map[string]interface{})
-		gs = append(gs, getCoronaStatus(cm))
+
+	printCaseStates(caseStates)
+
+}
+
+func printCaseState(caseState gorona.CaseState) {
+	printCaseStates(gorona.CaseStates{caseState})
+}
+
+func printCaseStates(caseStates gorona.CaseStates) {
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.SetStyle(table.StyleLight)
+
+	t.AppendHeader(
+		table.Row{
+			"Country", "Cases", "Today Cases", "Death", "Today Deaths", "Recovered", "Active", "Critical", "Cases Per Million",
+		},
+	)
+
+	for _, caseState := range caseStates {
+		t.AppendRow(table.Row{
+			caseState.Country,
+			caseState.Cases,
+			caseState.TodayCases,
+			caseState.Deaths,
+			caseState.TodayDeaths,
+			caseState.Recovered,
+			caseState.Active,
+			caseState.Critical,
+			caseState.CasesPerOneMillion,
+		})
 	}
-	getPrinter().Print(gs)
+
+	if len(caseStates) > 1 {
+		t.AppendFooter(
+			table.Row{
+				"Totals",
+				caseStates.Cases(),
+				caseStates.TodayCases(),
+				caseStates.Deaths(),
+				caseStates.TodayDeaths(),
+				caseStates.Recovered(),
+				caseStates.Active(),
+				caseStates.Critical(),
+				caseStates.CasesPerOneMillion(),
+			},
+		)
+	}
+
+	t.Render()
+
 }
