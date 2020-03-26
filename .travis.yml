@@ -12,3 +12,4 @@ script:
     - go install
     - gorona
     - gorona Mozambique
+    - docker build -t harik8/gorona:latest .
