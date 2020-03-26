@@ -75,7 +75,7 @@ func printCaseStates(caseStates gorona.CaseStates) {
 
 	t.AppendHeader(
 		table.Row{
-			"Country", "Cases", "Today Cases", "Death", "Today Deaths", "Recovered", "Active", "Critical", "Cases Per Million",
+			"Country", "Cases", "Today Cases", "Death", "Today Deaths", "Recovered", "Active", "Critical", "Cases Per Million", "Deaths Per Million",
 		},
 	)
 
@@ -90,6 +90,7 @@ func printCaseStates(caseStates gorona.CaseStates) {
 			caseState.Active,
 			caseState.Critical,
 			caseState.CasesPerOneMillion,
+			caseState.DeathsPerOneMillion,
 		})
 	}
 
@@ -105,6 +106,7 @@ func printCaseStates(caseStates gorona.CaseStates) {
 				caseStates.Active(),
 				caseStates.Critical(),
 				caseStates.CasesPerOneMillion(),
+				caseStates.DeathsPerOneMillion(),
 			},
 		)
 	}
