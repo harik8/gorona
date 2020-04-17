@@ -1,9 +1,13 @@
 # Gorona Dockerfile
-
 FROM golang:1.13-alpine3.11
 
-RUN apk update && \
-    apk add --no-cache git=2.24.2-r0 && \
-    go get -u github.com/harik8/gorona
+LABEL HARI KARTHIGASU <hari.karthigasu@gmail.com>
+
+WORKDIR /app
+
+COPY ./go.mod ./go.sum ./
+COPY . .
+
+RUN go build -o /usr/local/bin
 
 ENTRYPOINT ["gorona"]
