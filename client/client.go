@@ -11,7 +11,7 @@ import (
 	"github.com/jedib0t/go-pretty/table"
 )
 
-const url = "https://corona.lmao.ninja/countries/"
+const url = "https://corona.lmao.ninja/v2/countries/"
 
 // GetCountry : Get by country
 func GetCountry(country string) {
@@ -75,7 +75,7 @@ func printCaseStates(caseStates gorona.CaseStates) {
 
 	t.AppendHeader(
 		table.Row{
-			"Country", "Cases", "Today Cases", "Death", "Today Deaths", "Recovered", "Active", "Critical", "Cases Per Million", "Deaths Per Million",
+			"Country", "Cases", "Today Cases", "Death", "Today Deaths", "Recovered", "Active", "Critical", "Tests", "Cases Per Million", "Deaths Per Million", "Tests Per Million",
 		},
 	)
 
@@ -89,8 +89,10 @@ func printCaseStates(caseStates gorona.CaseStates) {
 			caseState.Recovered,
 			caseState.Active,
 			caseState.Critical,
+			caseState.Tests,
 			caseState.CasesPerOneMillion,
 			caseState.DeathsPerOneMillion,
+			caseState.TestsPerOneMillion,
 		})
 	}
 
@@ -105,8 +107,10 @@ func printCaseStates(caseStates gorona.CaseStates) {
 				caseStates.Recovered(),
 				caseStates.Active(),
 				caseStates.Critical(),
+				caseStates.Tests(),
 				caseStates.CasesPerOneMillion(),
 				caseStates.DeathsPerOneMillion(),
+				caseStates.TestsPerOneMillion(),
 			},
 		)
 	}
