@@ -2,18 +2,18 @@ package gorona
 
 // CaseState : Struct Case State
 type CaseState struct {
-	Country             string `json:"country" header:"Country"`
-	Cases               int64  `json:"cases" header:"Cases"`
-	TodayCases          int64  `json:"todayCases" header:"Today Cases"`
-	Deaths              int64  `json:"deaths" header:"Deaths"`
-	TodayDeaths         int64  `json:"todayDeaths" header:"Today Deaths"`
-	Recovered           int64  `json:"recovered" header:"Recovered"`
-	Active              int64  `json:"active" header:"Active"`
-	Critical            int64  `json:"critical" header:"Critical"`
-	Tests               int64  `json:"tests" header:"Tests"`
-	CasesPerOneMillion  int64  `json:"casesPerOneMillion" header:"Cases Per One Million"`
-	DeathsPerOneMillion int64  `json:"deathsPerOneMillion" header:"Deaths Per One Million"`
-	TestsPerOneMillion  int64  `json:"TestsPerOneMillion" header:"Tests Per One Million"`
+	Country             string  `json:"country" header:"Country"`
+	Cases               int64   `json:"cases" header:"Cases"`
+	TodayCases          int64   `json:"todayCases" header:"Today Cases"`
+	Deaths              int64   `json:"deaths" header:"Deaths"`
+	TodayDeaths         int64   `json:"todayDeaths" header:"Today Deaths"`
+	Recovered           int64   `json:"recovered" header:"Recovered"`
+	Active              int64   `json:"active" header:"Active"`
+	Critical            int64   `json:"critical" header:"Critical"`
+	Tests               int64   `json:"tests" header:"Tests"`
+	CasesPerOneMillion  int64   `json:"casesPerOneMillion" header:"Cases Per One Million"`
+	DeathsPerOneMillion float64 `json:"deathsPerOneMillion" header:"Deaths Per One Million"`
+	TestsPerOneMillion  int64   `json:"TestsPerOneMillion" header:"Tests Per One Million"`
 }
 
 // CaseStates is a list of cases
@@ -101,8 +101,8 @@ func (cs CaseStates) CasesPerOneMillion() int64 {
 }
 
 // DeathsPerOneMillion is the total number of deaths per million
-func (cs CaseStates) DeathsPerOneMillion() int64 {
-	var total int64
+func (cs CaseStates) DeathsPerOneMillion() float64 {
+	var total float64
 	for _, s := range cs {
 		total += s.DeathsPerOneMillion
 	}
